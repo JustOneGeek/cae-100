@@ -1,0 +1,22 @@
+{% extends './base.html.j2' %}
+
+{% block title %}
+    Students
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="../static/css/students.css">
+{% endblock %}
+
+{% block content %}
+    <h1>My Students</h1>
+    <ul>
+        {% for student in students %}
+            {% if student == "caleb" %} 
+                <li>Terrible Human Being Doesn't Deserve Good Things ({{student | title}})</li>
+            {% else %}
+                <li>{{ student | title }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}
