@@ -1,4 +1,4 @@
-# Flask Project for CAE95
+# Flask Project for CAE100
 This is the project we built in class together
 
 ## Everyday on a different branch:
@@ -11,11 +11,19 @@ To see the versions at the end of its respective day:
 ## To clone this repository:
 **From the CLI**
 * Navigate into the folder you where you want to place this application
-* `git clone https://github.com/CrtlAltElite/CAE-100-Project.git`
-* `cd CAE-100-Project`
+* `git clone https://github.com/CrtlAltElite/CAE100-BIG-Project.git`
+* `cd CAE100-BIG-Project`
 * now you are inside the project
   * ##### To view a specific branches
     * `git checkout BRANCH_NAME` [replace BRANCH_NAME with the name of the branch you want to be on]
     * You can open this branch in VS Code using `code .`
 ## To update your version with a newer version on github
 * `git pull --all`
+
+
+## Your ENV file should contian the following environment variables:
+* FLASK_APP
+* FLASK_ENV
+* SECRET_KEY
+* SQLALCHEMY_DATABASE_URI
+* SQLALCHEMY_TRACK_MODIFICATIONS
