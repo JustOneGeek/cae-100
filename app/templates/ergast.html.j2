@@ -7,7 +7,7 @@
 
 {% block content %}
 <h1>Ergast Standing</h1>
-<form action = "/ergast" method="POST">
+<form action = "{{url_for('main.ergast')}}" method="POST">
    <div class="mb-3">
     <label for="year" class="form-label">Year</label>
     <input type="text" class="form-control" name="year" id="year" >
