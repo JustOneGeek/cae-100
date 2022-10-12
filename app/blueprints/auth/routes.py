@@ -19,7 +19,7 @@ def login():
             #Login Success!!!!
             flash('Successfully Logged in', 'success')
             login_user(u)
-            return redirect(url_for('main.index'))
+            return redirect(url_for('social.index'))
        
         error_string = "Incorrect Email/Password Combo"
         return render_template('login.html.j2', loginerror=error_string, form=form)
@@ -30,7 +30,7 @@ def login():
 def logout():
     logout_user()
     flash('Successfully Logged out', 'primary')
-    return redirect(url_for("main.index"))
+    return redirect(url_for("social.index"))
 
 
 @auth.route('/register', methods=["GET","POST"])
@@ -79,5 +79,5 @@ def edit_profile():
         current_user.from_dict(edited_user_data)
         current_user.save()
         flash("Profile Updated", "success")
-        return redirect(url_for("main.index"))
+        return redirect(url_for("social.index"))
     return render_template('register.html.j2',form=form)

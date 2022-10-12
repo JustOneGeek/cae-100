@@ -87,7 +87,7 @@ class User(UserMixin, db.Model):
         # self_posts = self.posts <-- this works and is easy
         self_posts = Post.query.filter_by(user_id = self.id)
         # Smoooshhhh together and and sort by date newest first
-        all_posts = followed.union(self_posts).order_by(Post.date_created.desc())
+        all_posts = followed.union(self_posts).order_by(Post.created_on.desc())
         return all_posts
 
 @login.user_loader

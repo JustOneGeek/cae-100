@@ -3,10 +3,12 @@ from flask_migrate import Migrate
 from flask import Flask
 from config import Config
 from flask_login import LoginManager
+from flask_moment import Moment
 
 db = SQLAlchemy()
 migrate = Migrate(compare_type=True)
 login = LoginManager()
+moment = Moment()
 
 def create_app(config_class=Config):
     # intializing
@@ -15,8 +17,9 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
+    moment.init_app(app)
 
-    login.login_view = 'login'
+    login.login_view = 'auth.login'
     login.login_message = 'Log yourself in your flithy animal!'
     login.login_message_category = 'warning'
 
@@ -25,6 +28,9 @@ def create_app(config_class=Config):
 
     from .blueprints.main import bp as main_bp
     app.register_blueprint(main_bp)
+
+    from .blueprints.social import bp as social_bp
+    app.register_blueprint(social_bp)
 
     return app
 
