@@ -16,6 +16,36 @@
                         <a class="nav-link" href="{{url_for('main.students')}}">Students</a>
                     </li>
                 </ul>
-            </div>      
+            </div>
+
+            <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_anonymous %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('auth.login')}}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('auth.register')}}">Register</a>
+                    </li>
+                    {% else %}
+                    <a href='#'>
+                        <img src="{{current_user.get_icon_url()}}" style="height:50px">
+                    </a>
+                    <li>
+                        <div class="row">
+                            <div class="col-12">
+                                <a href="{{url_for('auth.edit_profile')}}">
+                                    <i class="bi bi-gear-fill"></i>
+                                </a>
+                            </div>
+
+                            <div class="col-12">
+                                <a href="{{url_for('auth.logout')}}">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+            </ul>      
         </div>
     </nav>  
