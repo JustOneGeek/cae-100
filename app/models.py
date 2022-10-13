@@ -1,8 +1,9 @@
+from unicodedata import category
 from app import db, login
 from flask_login import UserMixin #### THIS IS ONLY FOR THE USER MODEL!!!!
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import secrets
 
 followers = db.Table(
     'followers',
@@ -20,6 +21,8 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String)
     created_on = db.Column(db.DateTime, default=dt.utcnow)
     icon = db.Column(db.Integer)
+    token = db.Column(db.String, unique=True, index=True)
+    token_exp = db.Column(db.DateTime)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     followed = db.relationship('User', secondary=followers, 
         primaryjoin=(followers.c.follower_id == id),
@@ -30,7 +33,36 @@ class User(UserMixin, db.Model):
     # current_user.followed.all() #all the people current user is following
     # current_user.followers.all() # all the people following the current user
 
+    ##################################################
+    ############## Methods for Token auth ############
+    ##################################################    
+    def get_token(self, exp=86400):
+        current_time = dt.utcnow()
+        # If their is a token and it is valid we willtreturn the token
+        if self.token and self.token_exp > current_time+timedelta(seconds=60):
+            return self.token
+        # There was no token or It was expired, so make a new token
+        self.token = secrets.token_urlsafe(32)
+        self.token_exp = current_time + timedelta(seconds=exp)
+        self.save()
+        return self.token
 
+    def revoke_token(self):
+        self.token_exp = dt.utcnow() - timedelta(seconds=60)
+    
+    @staticmethod
+    def check_token(token):
+        # u=User.query.filter(User.token == token).first()
+        u = User.query.filter_by(token = token).first()
+        if not u or u.token_exp < dt.utcnow():
+            return None
+        return u
+
+
+
+    #########################################
+    ############# End Methods for tokens ####
+    #########################################
 
     # Should return a unique identifing string
     def __repr__(self):
@@ -51,6 +83,17 @@ class User(UserMixin, db.Model):
     def save(self):
         db.session.add(self) # add the user to out session
         db.session.commit() # saves the session to the database
+
+    def to_dict(self):
+        return {
+            'id':self.id,
+            'first_name':self.first_name,
+            'last_name':self.last_name,
+            'email':self.email,
+            'created_on' :self.created_on,
+            'icon':self.icon,
+            'token':self.token,
+        }
 
     def from_dict(self, data):
         self.first_name = data['first_name']
@@ -109,6 +152,15 @@ class Post(db.Model):
     def edit(self, new_body):
         self.body=new_body
 
+    def to_dict(self):
+        return{
+            'id':self.id,
+            'body':self.body,
+            'created_on':self.created_on,
+            'date_modified':self.date_modified,
+            'user_id':self.user_id,
+        }
+
     # save the post to the db
     def save(self):
         db.session.add(self) # add the post to out session
@@ -117,3 +169,67 @@ class Post(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    products = db.relationship('Item', backref="cat", lazy="dynamic", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        f'<Category: {self.id} | {self.name}>'
+
+    # save the post to the db
+    def save(self):
+        db.session.add(self) # add the post to out session
+        db.session.commit() # saves the session to the database
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id":self.id,
+            "name":self.name
+        }
+
+
+
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    desc = db.Column(db.Text)
+    price = db.Column(db.Float)
+    img = db.Column(db.String)
+    created_on = db.Column(db.DateTime, default=dt.utcnow)
+    category_id = db.Column(db.ForeignKey('category.id'))
+
+    def __repr__(self):
+        f'<Item: {self.id} | {self.name}>'
+
+    # save the post to the db
+    def save(self):
+        db.session.add(self) # add the post to out session
+        db.session.commit() # saves the session to the database
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+    
+    def to_dict(self):
+        return {
+            "id":self.id,
+            "name":self.name,
+            "desc":self.desc,
+            "price":self.price,
+            "img":self.img,
+            "created_on":self.created_on,
+            "category_id":self.category_id,
+            "category_name":self.cat.name
+        }
+
+    def from_dict(self, data):
+        for field in ["name", "desc", "price", "img", "category_id"]:
+            if field in data:
+                setattr(self, field, data[field])

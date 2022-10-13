@@ -61,6 +61,7 @@ def register():
     return render_template('register.html.j2', form=form)
 
 @auth.route('/edit_profile', methods=['GET','POST'])
+@login_required
 def edit_profile():
     form = EditProfileForm()
     if request.method == 'POST' and form.validate_on_submit():
