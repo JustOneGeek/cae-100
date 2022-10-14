@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     icon = db.Column(db.Integer)
     token = db.Column(db.String, unique=True, index=True)
     token_exp = db.Column(db.DateTime)
+    is_admin = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     followed = db.relationship('User', secondary=followers, 
         primaryjoin=(followers.c.follower_id == id),
@@ -93,6 +94,7 @@ class User(UserMixin, db.Model):
             'created_on' :self.created_on,
             'icon':self.icon,
             'token':self.token,
+            'is_admin':self.is_admin
         }
 
     def from_dict(self, data):
