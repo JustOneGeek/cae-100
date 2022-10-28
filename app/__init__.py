@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import Flask
+from flask import Flask, send_from_directory
 from config import Config
 from flask_login import LoginManager
 from flask_moment import Moment
@@ -16,7 +16,7 @@ if os.environ.get('FLASK_DEBUG'):
 
 def create_app(config_class=Config):
     # intializing
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder="../client/build", static_url_path='')
     app.config.from_object(Config)
     db.init_app(app)
     migrate.init_app(app, db)
@@ -29,6 +29,14 @@ def create_app(config_class=Config):
     login.login_view = 'auth.login'
     login.login_message = 'Log yourself in your flithy animal!'
     login.login_message_category = 'warning'
+
+    @app.route('/')
+    def serve():
+        return send_from_directory(app.static_folder, 'index.html')
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return app.send_static_file('index.html')
 
     from .blueprints.auth import bp as auth_bp
     app.register_blueprint(auth_bp)

@@ -3,6 +3,63 @@ from app.blueprints.auth.authy import token_auth
 from flask import make_response, g, abort, request
 from app.models import Item, Category
 from helpers import require_admin
+import stripe
+import os
+from collections import Counter
+############
+##
+##  Stripe API ROUTES
+##
+############
+stripe.api_key = os.environ.get('STRIPE_SK')
+YOUR_DOMAIN = os.environ.get('YOUR_DOMAIN')
+
+
+#{
+# user:{user dictionary}
+# cart: [items dictionaries]
+#}
+
+@api.route('/create-checkout-session', methods=['POST'])
+@token_auth.login_required()
+def create_checkout_session():
+    data = request.get_json()
+    cart = data.get('cart')
+    user = data.get('user')
+    line_items=[]
+    filtered_ids = map(lambda item: item['id'], cart)
+    item_counts = Counter(filtered_ids)
+
+
+    for item in cart:
+        if item['id'] in item_counts:
+            line_items.append({
+                    "name":item['name'],
+                    "amount": int(float(item['price'])*100), #in pennies
+                    "quantity":item_counts[item['id']],
+                    "currency": 'USD'
+                })
+            del item_counts[item['id']]
+    
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            customer_email = user['email'],
+            billing_address_collection='auto',
+            shipping_address_collection={
+                "allowed_countries":['US','CA']
+            },
+            line_items=line_items,
+            mode='payment',
+            success_url=YOUR_DOMAIN + 'checkoutsuccess',
+            cancel_url=YOUR_DOMAIN + 'cart/true',
+        )
+    except Exception as e:
+        return str(e)
+
+    return make_response({"url":checkout_session.url}, 200)
+
+
 
 
 ############
